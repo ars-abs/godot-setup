@@ -33,7 +33,11 @@ installAndroidCMDTool() {
 
 installSDKSupportTools() {
   echo "Installing SDK support tools..."
-  export ANDROID_HOME="$DESTINATION_DIR"
+
+  ANDROID_HOME="/opt/android/sdk/"
+  echo "ANDROID_HOME=\"$ANDROID_HOME\"" | tee -a /etc/environment
+  source /etc/environment
+
   SDK_MANAGER="$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager
 
   "$SDK_MANAGER" platform-tools
@@ -45,18 +49,29 @@ installSDKSupportTools() {
 
 setupEnvironmentVars() {
   echo "Setting up environment variables..."
-  export PATH=$PATH:"$ANDROID_HOME"/cmdline-tools/latest/bin
-  export PATH=$PATH:"$ANDROID_HOME"/emulator
-  export PATH=$PATH:"$ANDROID_HOME"/platform-tools
+  EMULATOR_PATH="$ANDROID_HOME/emulator"
+  PLATFORM_TOOLS_PATH="$ANDROID_HOME/platform-tools"
+  BIN_TOOLS_PATH="$ANDROID_HOME/cmdline-tools/latest/bin"
+
+  if grep -q '^PATH=' /etc/environment; then
+    # PATH is already defined, append the new path
+    sed -i 's|^PATH=.*$|&:'"$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH"'|' /etc/environment
+  else
+    # PATH is not defined, add a new line
+    echo "PATH=\$PATH:$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH" | tee -a /etc/environment
+  fi
+
+  source /etc/environment
+
+  echo "Environment variables added to /etc/environment."
 }
 
 createAVD() {
   echo "Creating Android Virtual Device (AVD)..."
-  AVD_MANAGER="$ANDROID_HOME"/cmdline-tools/latest/bin/avdmanager
 
-  "$AVD_MANAGER" create avd --name android34 --package "system-images;android-34;default;x86_64"
+  avdmanager create avd --name android34 --package "system-images;android-34;default;x86_64"
 
-  echo "To run emulator run this command $ emulator @android34"
+  echo "To run emulator, Run this command $ emulator @android34"
 }
 
 main() {
