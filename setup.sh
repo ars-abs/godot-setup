@@ -3,6 +3,8 @@
 set -e
 cd "$(dirname "$0")"
 
+ANDROID_HOME="/opt/android/sdk"
+
 installJDK() {
   echo "Installing JDK..."
   LTS_VERSION=17
@@ -12,29 +14,32 @@ installJDK() {
 
 installGodot() {
   echo "Installing Godot..."
-  DESTINATION_DIR="./resources/godot"
+  DESTINATION_DIR="./.temp/godot"
   FILE_NAME="Godot_v3.5-stable_x11.64"
 
   curl -LO https://github.com/godotengine/godot-builds/releases/download/3.5-stable/Godot_v3.5-stable_x11.64.zip
   mkdir -p "$DESTINATION_DIR"
   unzip -q "$FILE_NAME.zip" -d "$DESTINATION_DIR"
-  mv "$DESTINATION_DIR"/"$FILE_NAME" /bin/godot
+  mv "$DESTINATION_DIR/$FILE_NAME" /bin/godot
 }
 
 installAndroidCMDTool() {
   echo "Installing Android Command Line Tools..."
   ZIP_FILE="commandlinetools.zip"
-  DESTINATION_DIR="/opt/android/sdk/"
+  DESTINATION_DIR="./.temp/androidcmd/"
+  ANDROID_SRC="./.temp/androidcmd/cmdline-tools/*"
+  ANDROID_DEST="$ANDROID_HOME/cmdline-tools/latest/"
 
   curl -o "$ZIP_FILE" https://dl.google.com/android/repository/commandlinetools-linux-10406996_latest.zip
   mkdir -p "$DESTINATION_DIR"
   unzip -q "$ZIP_FILE" -d "$DESTINATION_DIR"
+  mkdir -p "$ANDROID_DEST"
+  mv $ANDROID_SRC $ANDROID_DEST
 }
 
 installSDKSupportTools() {
   echo "Installing SDK support tools..."
 
-  ANDROID_HOME="/opt/android/sdk/"
   echo "ANDROID_HOME=\"$ANDROID_HOME\"" | tee -a /etc/environment
   source /etc/environment
 
