@@ -74,6 +74,14 @@ createAVD() {
   echo "To run emulator, Run this command $ emulator @android34"
 }
 
+createKeyStores() {
+  echo "Creating both debug and release keystores..."
+
+  cat .debugpass.txt | keytool -genkeypair -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 365 -alias debug_key -dname "CN=Name,OU=Your Organization,O=Your Company,L=Your City,ST=Your State,C=Your Country"
+
+  cat .releasepass.txt | keytool -genkeypair -v -keystore release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias debug_key -dname "CN=Name,OU=Your Organization,O=Your Company,L=Your City,ST=Your State,C=Your Country"
+}
+
 main() {
   # installJDK
   # installGodot
@@ -81,6 +89,7 @@ main() {
   # installSDKSupportTools
   # setupEnvironmentVars
   # createAVD
+  createKeyStores
 
   echo "Setup completed successfully!"
 }
