@@ -62,6 +62,7 @@ setupEnvironmentVars() {
 
   SETUP_PATH=$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH
 
+  echo "export ANDROID_AVD_HOME=$ANDROID_HOME/avd" | tee -a /etc/bash.bashrc
   echo "export PATH=\$PATH:$SETUP_PATH" | tee -a /etc/bash.bashrc
   source /etc/bash.bashrc
 }
