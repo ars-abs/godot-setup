@@ -37,11 +37,13 @@ installAndroidCMDTool() {
   mv $ANDROID_SRC $ANDROID_DEST
 }
 
+setupAndroidHome() {
+  echo "export ANDROID_HOME=\"$ANDROID_HOME\"" | tee -a /etc/bash.bashrc
+  source /etc/bash.bashrc
+}
+
 installSDKSupportTools() {
   echo "Installing SDK support tools..."
-
-  echo "ANDROID_HOME=\"$ANDROID_HOME\"" | tee -a /etc/environment
-  source /etc/environment
 
   SDK_MANAGER="$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager
 
@@ -58,17 +60,10 @@ setupEnvironmentVars() {
   PLATFORM_TOOLS_PATH="$ANDROID_HOME/platform-tools"
   BIN_TOOLS_PATH="$ANDROID_HOME/cmdline-tools/latest/bin"
 
-  if grep -q '^PATH=' /etc/environment; then
-    # PATH is already defined, append the new path
-    sed -i 's|^PATH=.*$|&:'"$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH"'|' /etc/environment
-  else
-    # PATH is not defined, add a new line
-    echo "PATH=\$PATH:$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH" | tee -a /etc/environment
-  fi
+  SETUP_PATH=$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH
 
-  source /etc/environment
-
-  echo "Environment variables added to /etc/environment."
+  echo "export PATH=\$PATH:$SETUP_PATH" | tee -a /etc/bash.bashrc
+  source /etc/bash.bashrc
 }
 
 createAVD() {
@@ -88,12 +83,13 @@ createKeyStores() {
 }
 
 main() {
-  # installJDK
-  # installGodot
-  # installAndroidCMDTool
-  # installSDKSupportTools
-  # setupEnvironmentVars
-  # createAVD
+  installJDK
+  installGodot
+  installAndroidCMDTool
+  setupAndroidHome
+  installSDKSupportTools
+  setupEnvironmentVars
+  createAVD
   createKeyStores
 
   echo "Setup completed successfully!"
