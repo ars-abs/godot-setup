@@ -3,21 +3,24 @@
 set -e
 cd "$(dirname "$0")"
 
+JAVA_LTS_VERSION=17
+GODOT_VERSION=3.5
+GODOT_FILE_NAME="Godot_v$GODOT_VERSION-stable_x11.64"
 ANDROID_HOME="/opt/android/sdk"
+API_LEVEL=34
+AVD_NAME=android-level-34
 
 installJDK() {
   echo "Installing JDK..."
-  LTS_VERSION=17
 
-  apt install openjdk-"$LTS_VERSION"-jdk
+  apt install openjdk-"$JAVA_LTS_VERSION"-jdk
 }
 
 installGodot() {
   echo "Installing Godot..."
   DESTINATION_DIR="./.temp/godot"
-  FILE_NAME="Godot_v3.5-stable_x11.64"
 
-  curl -LO https://github.com/godotengine/godot-builds/releases/download/3.5-stable/Godot_v3.5-stable_x11.64.zip
+  curl -LO https://github.com/godotengine/godot-builds/releases/download/$GODOT_VERSION-stable/$GODOT_FILE_NAME.zip
   mkdir -p "$DESTINATION_DIR"
   unzip -q "$FILE_NAME.zip" -d "$DESTINATION_DIR"
   mv "$DESTINATION_DIR/$FILE_NAME" /bin/godot
@@ -37,21 +40,16 @@ installAndroidCMDTool() {
   mv $ANDROID_SRC $ANDROID_DEST
 }
 
-setupAndroidHome() {
-  echo "export ANDROID_HOME=\"$ANDROID_HOME\"" | tee -a /etc/bash.bashrc
-  source /etc/bash.bashrc
-}
-
 installSDKSupportTools() {
   echo "Installing SDK support tools..."
 
-  SDK_MANAGER="$ANDROID_HOME"/cmdline-tools/latest/bin/sdkmanager
+  SDK_MANAGER=$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-  "$SDK_MANAGER" platform-tools
-  "$SDK_MANAGER" emulator
-  "$SDK_MANAGER" "platforms;android-34"
-  "$SDK_MANAGER" "system-images;android-34;default;x86_64"
-  "$SDK_MANAGER" "build-tools;34.0.0"
+  $SDK_MANAGER platform-tools
+  $SDK_MANAGER emulator
+  $SDK_MANAGER "platforms;android-$API_LEVEL"
+  $SDK_MANAGER "system-images;android-$API_LEVEL;default;x86_64"
+  $SDK_MANAGER "build-tools;$API_LEVEL.0.0"
 }
 
 setupEnvironmentVars() {
@@ -62,36 +60,30 @@ setupEnvironmentVars() {
 
   SETUP_PATH=$EMULATOR_PATH:$PLATFORM_TOOLS_PATH:$BIN_TOOLS_PATH
 
-  echo "export ANDROID_AVD_HOME=$ANDROID_HOME/avd" | tee -a /etc/bash.bashrc
-  echo "export PATH=\$PATH:$SETUP_PATH" | tee -a /etc/bash.bashrc
+  {
+    echo "export ANDROID_HOME=$ANDROID_HOME"
+    echo "export ANDROID_AVD_HOME=$ANDROID_HOME/avd"
+    echo "export PATH=\$PATH:$SETUP_PATH"
+  } | tee -a /etc/bash.bashrc
+
   source /etc/bash.bashrc
 }
 
 createAVD() {
   echo "Creating Android Virtual Device (AVD)..."
 
-  avdmanager create avd --name android34 --package "system-images;android-34;default;x86_64"
+  avdmanager create avd --name $AVD_NAME --package "system-images;android-$API_LEVEL;default;x86_64"
 
-  echo "To run emulator, Run this command $ emulator @android34"
-}
-
-createKeyStores() {
-  echo "Creating both debug and release keystores..."
-
-  cat .debugpass.txt | keytool -genkeypair -v -keystore debug.keystore -keyalg RSA -keysize 2048 -validity 365 -alias debug_key -dname "CN=Name,OU=Your Organization,O=Your Company,L=Your City,ST=Your State,C=Your Country"
-
-  cat .releasepass.txt | keytool -genkeypair -v -keystore release.keystore -keyalg RSA -keysize 2048 -validity 10000 -alias debug_key -dname "CN=Name,OU=Your Organization,O=Your Company,L=Your City,ST=Your State,C=Your Country"
+  echo "To run emulator, Run this command $ emulator @$AVD_NAME"
 }
 
 main() {
   installJDK
   installGodot
   installAndroidCMDTool
-  setupAndroidHome
-  installSDKSupportTools
   setupEnvironmentVars
+  installSDKSupportTools
   createAVD
-  createKeyStores
 
   echo "Setup completed successfully!"
 }
