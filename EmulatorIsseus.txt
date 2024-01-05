@@ -1,0 +1,8 @@
+These are suspected to produce problem
+
+permission issues
+emulator version update
+change system image
+Environment variable setup
+system vs user level installation
+API level may be recent one (mine: ubuntu22.04 remote:ubuntu20.04)

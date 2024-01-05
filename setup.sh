@@ -4,7 +4,7 @@ set -e
 cd "$(dirname "$0")"
 
 JAVA_LTS_VERSION=17
-GODOT_VERSION=3.5
+GODOT_VERSION="3.5"
 GODOT_FILE_NAME="Godot_v$GODOT_VERSION-stable_x11.64"
 ANDROID_HOME="/opt/android/sdk"
 API_LEVEL=34
@@ -20,10 +20,10 @@ installGodot() {
   echo "Installing Godot..."
   DESTINATION_DIR="./.temp/godot"
 
-  curl -LO https://github.com/godotengine/godot-builds/releases/download/$GODOT_VERSION-stable/$GODOT_FILE_NAME.zip
+  curl -LO https://github.com/godotengine/godot-builds/releases/download/"$GODOT_VERSION"-stable/"$GODOT_FILE_NAME".zip
   mkdir -p "$DESTINATION_DIR"
-  unzip -q "$FILE_NAME.zip" -d "$DESTINATION_DIR"
-  mv "$DESTINATION_DIR/$FILE_NAME" /bin/godot
+  unzip -q "$GODOT_FILE_NAME.zip" -d "$DESTINATION_DIR"
+  mv "$DESTINATION_DIR/$GODOT_FILE_NAME" /bin/godot
 }
 
 installAndroidCMDTool() {
